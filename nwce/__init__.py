@@ -1,0 +1,340 @@
+import re
+import os
+
+DEFAULT_CONFIG = {"indent": "  ", "comments": "!", "config_type": "nxos", "negation": "no "}
+
+
+def naturalize(value, max_length, integer_places=8):
+    """
+    Take an alphanumeric string and prepend all integers to `integer_places` places to ensure the strings
+    are ordered naturally. For example:
+        site9router21
+        site10router4
+        site10router19
+    becomes:
+        site00000009router00000021
+        site00000010router00000004
+        site00000010router00000019
+    :param value: The value to be naturalized
+    :param max_length: The maximum length of the returned string. Characters beyond this length will be stripped.
+    :param integer_places: The number of places to which each integer will be expanded. (Default: 8)
+    """
+    if not value:
+        return value
+    output = []
+    for segment in re.split(r"(\d+)", value):
+        if segment.isdigit():
+            output.append(segment.rjust(integer_places, "0"))
+        elif segment:
+            output.append(segment)
+    ret = "".join(output)
+
+    return ret[:max_length]
+
+
+class CfgBlock(object):
+    def __add__(self, other):
+        """Make a merge of 2 CfgBlock objects."""
+        return self.copy(align=True).merge(other.copy(align=True))
+
+    def __init__(self, lines=None, config=None):
+        if not config:
+            self.config = DEFAULT_CONFIG.copy()
+        else:
+            self.config = {**DEFAULT_CONFIG.copy(), **config}
+
+        self.line = None
+        self.negate = None
+        self.children = list()
+
+        if lines:
+            self._parse(lines)
+            self._merge_duplicate_siblings()
+
+    def __repr__(self):
+        r = str(self)
+        if self.children and r != "":
+            r += "/"
+        r += "".join(["(" + str(c) + ")" for c in self.children])
+        return f"{self.__class__.__name__}: {r} ({len(self.children)} children)"
+
+    def __str__(self):
+        command = self.line if self.line is not None else ""
+        negation = self.config["negation"] if (command and self.negate) else ""
+        return negation + command
+
+    def __sub__(self, other):
+        """Make a diff of 2 CfgBlock objects."""
+        return CfgBlock.diff(self.copy(align=True), other.copy(align=True))
+
+    def _align(self):
+        """Some objects have 2 representations (configs with only 1 top line)."""
+        if self.line is None:
+            return self
+
+        c = CfgBlock()
+        c.children.append(self)
+        return c
+
+    @staticmethod
+    def _clean_blank_lines(lines):
+        """Removes all blank lines."""
+        p = re.compile(r"^\s*$")
+        return [line for line in lines if not p.search(line)]
+
+    @staticmethod
+    def _clean_comments(lines, comments="!"):
+        """Removes all comment lines."""
+        p = re.compile(r"^\s*[" + re.escape(comments) + "]")
+        return [line for line in lines if not p.search(line)]
+
+    @staticmethod
+    def _guess_indent(line):
+        m = re.compile(r"^\s+").search(line)
+        indent = m.group() if m else ""
+        return indent
+
+    def _merge_duplicate_siblings(self):
+        """Returns the CfgBlock object with merged duplicate siblings."""
+        res = []
+        while self.children:
+            c = self.children.pop(0)
+            dup: CfgBlock = next((b for b in res if b.line == c.line), None)
+            if dup:
+                if dup.negate != c.negate:
+                    raise Exception(f"Can't merge {dup} and {c}")
+                dup.children.extend(c.children)
+                dup._merge_duplicate_siblings()
+            else:
+                res.append(c)
+        self.children = res
+        return self
+
+    def _parse(self, lines):
+        """Parse string lines into a comprehensive CfgBlock object structure."""
+        lines = self._clean_comments(lines, comments=self.config["comments"])
+        lines = self._clean_blank_lines(lines)
+        blocks = self._parse_blocks(lines)
+        if len(blocks) == 0:
+            return
+        if len(blocks) == 1:
+            self.line, self.negate, lines = self._parse_block(blocks[0])
+            blocks = self._parse_blocks(lines)
+        self.children = [CfgBlock(b, config=self.config) for b in blocks]
+
+    def _parse_block(self, lines):
+        """Parse string block to return top line and children lines."""
+        lines = CfgBlock.indent(lines, num=-1, indent=CfgBlock._guess_indent(lines[0]))
+        negate = lines[0].startswith(self.config["negation"])
+        lines[0] = lines[0] if not negate else lines[0][len(self.config["negation"]) :]
+        if len(lines) == 1:
+            return lines[0], negate, []
+        return (lines[0], negate, CfgBlock.indent(lines[1:], num=-1, indent=CfgBlock._guess_indent(lines[1])))
+
+    @staticmethod
+    def _parse_blocks(lines):
+        """Parse string lines to return string blocks."""
+        res = []
+        if len(lines) == 0:
+            return res
+        lines = CfgBlock.indent(lines, num=-1, indent=CfgBlock._guess_indent(lines[0]))
+        i = 0
+        while i < len(lines):
+            j = i + 1
+            if j < len(lines):
+                indent = CfgBlock._guess_indent(lines[j])
+                while j < len(lines) and 0 < len(indent) <= len(lines[j]) and lines[j][: len(indent)] == indent:
+                    j += 1
+            res.append(lines[i:j])
+            i = j
+        return res
+
+    def copy(self, align=False):
+        """Returns a deep-copy of a CfgBlock object."""
+        res = CfgBlock()
+        res.config = self.config
+        res.line = self.line
+        res.negate = self.negate
+        res.children = [c.copy() for c in self.children]
+        if align:
+            return res._align()
+        return res
+
+    def merge(self, other):
+        """Returns the CfgBlock object merged with another CfgBlock."""
+        for c in other.children:
+            matching_blocks = [b for b in self.children if b.line == c.line]
+            if len(matching_blocks) > 0:
+                if matching_blocks[0].negate != c.negate:
+                    raise Exception(f"Can't merge {matching_blocks[0]} and {c}")
+                matching_blocks[0].merge(c)
+            else:
+                d = c.copy()
+                d.parent = self
+                self.children.append(d)
+        return self
+
+    @staticmethod
+    def diff(op1, op2):
+        """Returns a new CfgBlock object from the diff of 2 CfgBlocks."""
+        res = CfgBlock([])
+        for b2 in op2.children:
+            if not any([str(b2) == str(b1) for b1 in op1.children]):
+                c = CfgBlock([])
+                c.line = b2.line
+                c.negate = not b2.negate
+                c.parent = res
+                res.children.insert(0, c)
+        for b1 in op1.children:
+            matching_blocks = [b2 for b2 in op2.children if b2.line == b1.line]
+            if len(matching_blocks) > 0:
+                c = CfgBlock.diff(b1, matching_blocks[0])
+                if c.children:
+                    c.line = b1.line
+                    c.negate = b1.negate
+                    c.parent = res
+                    res.children.append(c)
+            else:
+                c = b1.copy()
+                c.parent = res
+                res.children.append(c)
+        return res
+
+    def filter(self, filters=None, ignore_case=True):
+        """Returns a new CfgBlock from the current CfgBlock filtered according to the regex structure."""
+
+        # allow duck-typing
+        if not filters:
+            return self
+        if type(filters) is str:
+            filters = [filters]
+        # check all filters are strings
+        if not all([type(s) is str for s in filters]):
+            raise Exception("Invalid list of filters, all must be strings!")
+
+        # filter creates new objects, current object will remain intact,
+        res = self.copy()
+
+        # compile current level regex
+        exp = filters[0]
+        if ignore_case:
+            cexp = re.compile(exp, re.IGNORECASE)
+        else:
+            cexp = re.compile(exp)
+
+        # now filtering starts
+        next_levels_filters = filters[1:]
+        filtered_children = list()
+        for b in res.children:
+            if cexp.search(b.line):
+                if next_levels_filters:  # if sub-filters are defined, they must match something
+                    c = b.filter(next_levels_filters, ignore_case=ignore_case)
+                    if not c.children:
+                        c = None
+                else:
+                    c = b
+                if c:
+                    filtered_children.append(c)
+        res.children = filtered_children
+
+        return res
+
+    def lines(self, comment_line=None, _recursion_count=0):
+        """Returns a list of strings from the current CfgBlock."""
+
+        if comment_line is True:
+            if len(self.config["comments"]) > 0:
+                comment_char = self.config["comments"][0]
+            else:
+                comment_char = ""
+        if self.line is not None:
+            res = [str(self)]
+            for c in self.children:
+                res += self.indent(c.lines(_recursion_count=_recursion_count + 1), indent=self.config["indent"])
+        else:
+            res = list()
+            previous_command = None
+            previous_comment = False
+            for c in self.children:
+                command = c.line.split(" ")[0]
+                if comment_line and _recursion_count < 1:
+                    if previous_command and previous_command != command or previous_comment:
+                        res += [comment_char]
+                        previous_comment = False
+                res += c.lines(_recursion_count=_recursion_count + 1)
+                if comment_line and _recursion_count < 1:
+                    if len(c.children) > 0:
+                        previous_comment = True
+                previous_command = command
+            if comment_line:
+                res += [comment_char]
+        return res
+
+    def text(self, comment_line=None):
+        return "\n".join(self.lines(comment_line=comment_line))
+
+    @staticmethod
+    def indent(lines, indent="  ", num=1):
+        """Returns an indented copy of the list of strings passed as argument. Indent may be positive or negative"""
+
+        # copy lines to res
+        res = lines[:]
+
+        # no-op
+        if len(res) == 0 or num == 0:
+            return res
+
+        # prepend indent to each line
+        if num > 0:
+            for n in range(0, num):
+                res = [indent + line for line in res]
+            return res
+
+        # remove indent from each line
+        if num < 0:
+            for n in range(0, num, -1):
+                i = 0
+                while i < len(res):
+                    if i > 0 and res[i][: len(indent)] != indent:
+                        raise Exception(f"Line #{i}: Configuration is not correctly indented!")
+                    res[i] = res[i][len(indent) :]
+                    i += 1
+            return res
+
+    def sort(self, rules=None):
+        """Returns the current CfgBlock object sorted according to the rule list passed as argument."""
+
+        # find rules if not provided as argument
+        if not rules:
+            default_rules_dir = os.path.dirname(os.path.realpath(__file__))
+            filename = os.path.join(default_rules_dir, self.config["config_type"] + ".re.txt")
+            try:
+                with open(filename) as f:
+                    rules = CfgBlock(f.read().splitlines())
+            except FileNotFoundError:
+                print("Could not find rules!")
+
+        # apply rules
+        result = list()
+        lines = self.children.copy()
+        for rule in rules.children:
+            p = re.compile(rule.line, flags=re.IGNORECASE)
+            # all matched blocks, sorted alphabetically after naturalization
+
+            l = list(type(b.line) for b in lines if type(b.line) is not str)
+            if any(l):
+                print(rule.line, str(l))
+
+            matched = [b for b in lines if p.search(b.line)]
+            matched = sorted(matched, key=lambda b: naturalize(b.line, 1000))
+            # remove matched blocks from lines
+            lines = [b for b in lines if not p.search(b.line)]
+            # now sort matched blocks children using matching rule children
+            result += [block.sort(rules=rule) for block in matched]
+
+        # default rule for all remaining lines
+        lines.sort(key=lambda b: naturalize(b.line, 1000))
+        result += [block.sort(rules=CfgBlock([])) for block in lines]
+
+        self.children = result
+        return self

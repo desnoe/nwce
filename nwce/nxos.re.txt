@@ -1,0 +1,419 @@
+^version
+^power
+^hardware ejector
+^hardware module
+^license
+^hardware access-list lou
+^hardware profile ucast
+^hardware profile multicast
+^hostname
+^class-map type network-qos
+^policy-map type network-qos
+^system inband
+^vdc combined-hostname
+^ha-policy
+^vdc
+  ^limit-resource vlan
+  ^limit-resource vrf
+  ^limit-resource port-channel
+  ^limit-resource m4route-mem
+  ^limit-resource m6route-mem
+^feature
+^cfs
+^clock timezone
+^clock summer
+^mpls
+^logging level
+^mac address-table
+^mac-learn
+^role name
+  ^description
+  ^rule
+^password
+^service password-recovery
+^username
+^ssh key
+^password secure-mode
+^ssh login-gracetime
+^banner
+^ssh login-attempts
+^ssh cipher-mode
+^ssh kexalgos
+^ssh ciphers
+^ssh macs
+^ssh keytypes
+^telnet login-attempts
+^password prompt
+^userpassphrase min-length
+^userpassphrase default-warntime
+^userpassphrase default-gracetime
+^userpassphrase default-lifetime
+^ssh idle-timeout
+^ip domain-lookup
+^ip name-server
+^ip tacacs
+^tacacs-server
+^tacacs-server host
+^aaa group server tacacs
+    ^server
+    ^use-vrf
+    ^source-interface
+^radius-server
+^aaa group server radius
+    ^deadtime
+    ^use-vrf
+    ^source-interface
+^keystore
+^crypto
+^spanning-tree mode
+^multicast
+^\w{2,4} access-list
+^diagnostic bootup
+^diagnostic monitor
+^qos statistics
+^class-map type qos
+^class-map type queuing
+^policy-map type qos
+^policy-map type queuing
+^system qos
+^class-map type control-plane
+^policy-map type control-plane
+  ^class
+    ^set
+    ^police
+^control-plane
+^copp
+^hardware access-list update
+^hardware forwarding
+^hardware access-list fp
+^hardware access-list tcam
+^hardware access-list match
+^system mode
+^snmp-server aaa
+^snmp-server packetsize
+^snmp-server protocol
+^snmp-server globalEnforcePriv
+^snmp-server tcp
+^snmp-server counter
+^snmp-server disable
+^snmp-server user
+^snmp-server host
+^rmon event
+^snmp-server enable
+^snmp-server community
+^callhome
+  ^switch-priority
+  ^destination-profile
+  ^transport http use-vrf
+  ^transport http proxy
+  ^enable
+  ^duplicate-message
+  ^periodic-inventory
+^ntp
+^clock format
+^aaa authentication
+^aaa authorization ssh-publickey
+^aaa authorization ssh-certificate
+^aaa authorization config-commands
+^aaa authorization commands default
+^aaa authorization config-commands
+^aaa authorization commands console
+^aaa accounting
+^aaa user
+^aaa authentication login
+^login on
+^vlan dot1Q
+^system default switchport
+^system jumbomtu
+^logging event
+^service unsupported-transceiver
+^system storm-control
+^system interface
+^system default interface
+^errdisable recovery interval
+^errdisable detect cause
+^errdisable recovery cause
+^ip route
+^ip source-route
+^ip pim auto-enable
+^ip pim bidir-rp-limit
+^ip pim rp-address
+^ip pim prune-on-expiry
+^ip pim ssm
+^ip pim spt-threshold
+^ip pim sg-expiry-timer
+^ip pim mtu
+^ip igmp event-history
+^ip igmp syslog-threshold
+^ip igmp snooping
+^ip mfwd event-history
+^ipv4 routing multicast
+^ip routing multicast
+^ipv6 multicast
+^ipv6 routing multicast
+^ipv6 mld internal
+^ipv6 mld syslog-threshold
+^ipv6 mld snooping
+^ip arp
+^ip service-reflect
+^system default interface-vlan
+^vlan
+^l2protocol
+^cdp
+^spanning-tree pathcost
+^spanning-tree port
+^spanning-tree bridge
+^spanning-tree loopguard
+^spanning-tree fcoe
+^spanning-tree domain
+^system default route-map
+^route-map
+^ip flow
+^flow
+^vrf context management
+  ^ip domain-name
+  ^ip route
+  ^ip pim
+  ^ipv6 multicast
+^port-channel
+^hardware rate-limiter
+^hardware forwarding l3
+^hardware access-list capture
+^hardware forwarding interface
+^hardware pdt
+^hardware forwarding unicast
+^hardware profile buffer
+^system routing
+^hardware qos afd
+^system high-multicast-priority
+^hardware qos eoq
+^hardware profile ipv6
+^system fabric-mode
+^switching-mode store-forward
+^hardware qos min-buffer
+^hardware profile ecmp
+^switching-mode fabric-speed
+^hardware qos include
+^hardware qos oq-drops
+^hardware qos burst-detect
+^hardware qos buffer input
+^congestion-control random-detect forward-nonecn
+^hardware qos mac
+^priority-flow-control
+^hardware qos nodrop
+^hardware qos buffer peak
+^hardware qos dynamic
+^hardware qos etrap
+^system nve
+^system mrouting
+^system dot1q-tunnel
+^hardware qos q-noise
+^hardware qos classify
+^hardware multicast
+^hardware qos burst-detect
+^hardware qos pfc
+^hardware qos
+^system internal
+^hardware profile mpls
+^hardware profile pbr
+^system pic-core
+^system multicast dcs-check
+^hardware proxy
+^ptp source
+^ptp device-type
+^ptp priority1
+^ptp priority2
+^ptp pdelay-req-interval
+^ptp notification
+^ptp correction-range
+^ptp management
+^ptp forward-version1
+^ptp mean-path-delay
+^ptp domain
+^ttag-marker-interval
+^ptp delay
+^system urpf
+^system fast-reload
+^nxapi http
+^nxapi https
+^nxapi use-vrf
+^nxapi ssl
+^nxapi ssl
+^nxapi client
+^nxapi idle-timeout
+^bloggerd
+^interface Ethernet
+  ^description
+  ^ptp
+  ^cdp
+  ^switchport
+  ^priority-flow-control
+  ^flowcontrol
+  ^delay
+  ^snmp
+  ^mtu
+  ^encapsulation
+  ^link debounce
+  ^beacon
+  ^link transmit
+  ^link mac
+  ^media-type
+  ^speed
+  ^duplex
+  ^fec
+  ^dfe-tuning-delay
+  ^link dfe
+  ^unidirectional
+  ^link loopback
+  ^port-type
+  ^negotiate
+  ^logging
+  ^storm-control
+  ^itu
+  ^bandwidth
+  ^load-interval
+  ^mac-address
+  ^medium
+  ^link-sync
+  ^ip access-group \w+ in
+  ^ip access-group \w+ out
+  ^vrf
+  ^ip address
+  ^ip forward
+  ^ip pim sparse-mode
+  ^ip pim
+  ^ip igmp version
+  ^ip igmp
+  ^ip
+  ^shutdown
+^interface mgmt
+  ^description
+  ^ptp
+  ^cdp
+  ^switchport
+  ^priority-flow-control
+  ^flowcontrol
+  ^delay
+  ^snmp
+  ^mtu
+  ^encapsulation
+  ^link debounce
+  ^beacon
+  ^link transmit
+  ^link mac
+  ^media-type
+  ^speed
+  ^duplex
+  ^fec
+  ^dfe-tuning-delay
+  ^link dfe
+  ^unidirectional
+  ^link loopback
+  ^port-type
+  ^negotiate
+  ^logging
+  ^storm-control
+  ^itu
+  ^bandwidth
+  ^load-interval
+  ^mac-address
+  ^medium
+  ^link-sync
+  ^ip access-group \w+ in
+  ^ip access-group \w+ out
+  ^vrf
+  ^ip address
+  ^ip forward
+  ^ip pim sparse-mode
+  ^ip pim
+  ^ip igmp version
+  ^ip igmp
+  ^ip
+  ^shutdown
+^interface
+  ^description
+  ^ptp
+  ^cdp
+  ^switchport
+  ^priority-flow-control
+  ^flowcontrol
+  ^delay
+  ^snmp
+  ^mtu
+  ^encapsulation
+  ^link debounce
+  ^beacon
+  ^link transmit
+  ^link mac
+  ^media-type
+  ^speed
+  ^duplex
+  ^fec
+  ^dfe-tuning-delay
+  ^link dfe
+  ^unidirectional
+  ^link loopback
+  ^port-type
+  ^negotiate
+  ^logging
+  ^storm-control
+  ^itu
+  ^bandwidth
+  ^load-interval
+  ^mac-address
+  ^medium
+  ^link-sync
+  ^ip access-group \w+ in
+  ^ip access-group \w+ out
+  ^vrf
+  ^ip address
+  ^ip forward
+  ^ip pim sparse-mode
+  ^ip pim
+  ^ip igmp version
+  ^ip igmp
+  ^ip
+  ^shutdown
+^icam monitor scale
+^system module
+^terminal
+^line
+  ^exec-timeout
+  ^session-limit
+  ^logout-warning
+  ^absolute-timeout
+  ^terminal
+^boot
+^ip radius
+^ip internal
+^ipv6 nd solicit-na
+^ipv6 adjacency-stale-timer
+^ipv6 nd off-list
+^ipv6 icmp
+^ip pim
+^ip igmp
+^ipv6 mld
+^ip adjmgr
+^hardware ip
+^ip arp
+^hardware ipv6
+^ipv6 nd cache
+^ip adjacency
+^ipv6 adjacency
+^xml server
+^fabricpath
+^virtual-service
+^logging logfile
+^logging server
+^logging monitor
+^logging history
+^telemetry
+  ^batch-dme-events
+  ^destination-profile
+  ^destination-group 200
+  ^sensor-group
+    ^data-source
+    ^path
+  ^subscription
+    ^dst-grp
+    ^snsr-grp
