@@ -22,6 +22,7 @@
 ^cfs
 ^clock timezone
 ^clock summer
+^clock
 ^mpls
 ^logging level
 ^mac address-table
@@ -147,6 +148,8 @@
 ^ip igmp syslog-threshold
 ^ip igmp snooping
 ^ip mfwd event-history
+^ip msdp
+^ip multicast
 ^ipv4 routing multicast
 ^ip routing multicast
 ^ipv6 multicast
@@ -167,6 +170,8 @@
 ^spanning-tree fcoe
 ^spanning-tree domain
 ^system default route-map
+^ip prefix-list
+^ip community-list
 ^route-map
 ^ip flow
 ^flow
@@ -230,8 +235,21 @@
 ^ptp forward-version1
 ^ptp mean-path-delay
 ^ptp domain
+^ptp
 ^ttag-marker-interval
 ^ptp delay
+^nbm mode
+^nbm host-policy
+    ^sender
+        ^default
+    ^receiver
+        ^default
+    ^pim
+        ^default
+^nbm reserve
+^nbm flow
+^nbm flow-policy
+^nbm
 ^system urpf
 ^system fast-reload
 ^nxapi http
@@ -275,11 +293,13 @@
   ^mac-address
   ^medium
   ^link-sync
-  ^ip access-group \w+ in
-  ^ip access-group \w+ out
+  ^ip access-group [\w-]+ in
+  ^ip access-group [\w-]+ out
   ^vrf
   ^ip address
   ^ip forward
+  ^ip ospf
+  ^ip router
   ^ip pim sparse-mode
   ^ip pim
   ^ip igmp version
@@ -319,11 +339,13 @@
   ^mac-address
   ^medium
   ^link-sync
-  ^ip access-group \w+ in
-  ^ip access-group \w+ out
+  ^ip access-group [\w-]+ in
+  ^ip access-group [\w-]+ out
   ^vrf
   ^ip address
   ^ip forward
+  ^ip ospf
+  ^ip router
   ^ip pim sparse-mode
   ^ip pim
   ^ip igmp version
@@ -363,11 +385,13 @@
   ^mac-address
   ^medium
   ^link-sync
-  ^ip access-group \w+ in
-  ^ip access-group \w+ out
+  ^ip access-group [\w-]+ in
+  ^ip access-group [\w-]+ out
   ^vrf
   ^ip address
   ^ip forward
+  ^ip ospf
+  ^ip router
   ^ip pim sparse-mode
   ^ip pim
   ^ip igmp version
@@ -385,7 +409,9 @@
   ^terminal
 ^boot
 ^ip radius
+^router ospf
 ^ip internal
+^router bgp
 ^ipv6 nd solicit-na
 ^ipv6 adjacency-stale-timer
 ^ipv6 nd off-list
