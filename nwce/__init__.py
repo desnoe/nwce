@@ -127,9 +127,10 @@ class CfgBlock(object):
         lines = CfgBlock.indent(lines, num=-1, indent=CfgBlock._guess_indent(lines[0]))
         negate = lines[0].startswith(self.config["negation"])
         lines[0] = lines[0] if not negate else lines[0][len(self.config["negation"]) :]
+        lines[0] = lines[0].strip()
         if len(lines) == 1:
             return lines[0], negate, []
-        return (lines[0], negate, CfgBlock.indent(lines[1:], num=-1, indent=CfgBlock._guess_indent(lines[1])))
+        return lines[0], negate, CfgBlock.indent(lines[1:], num=-1, indent=CfgBlock._guess_indent(lines[1]))
 
     @staticmethod
     def _parse_blocks(lines):
@@ -242,11 +243,9 @@ class CfgBlock(object):
     def lines(self, comment_line=None, _recursion_count=0):
         """Returns a list of strings from the current CfgBlock."""
 
-        if comment_line is True:
-            if len(self.config["comments"]) > 0:
-                comment_char = self.config["comments"][0]
-            else:
-                comment_char = ""
+        comment_char = ""
+        if comment_line is True and len(self.config["comments"]) > 0:
+            comment_char = self.config["comments"][0]
         if self.line is not None:
             res = [str(self)]
             for c in self.children:
@@ -320,11 +319,6 @@ class CfgBlock(object):
         for rule in rules.children:
             p = re.compile(rule.line, flags=re.IGNORECASE)
             # all matched blocks, sorted alphabetically after naturalization
-
-            l = list(type(b.line) for b in lines if type(b.line) is not str)
-            if any(l):
-                print(rule.line, str(l))
-
             matched = [b for b in lines if p.search(b.line)]
             matched = sorted(matched, key=lambda b: naturalize(b.line, 1000))
             # remove matched blocks from lines
