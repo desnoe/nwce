@@ -482,77 +482,87 @@ class TestCfgBlock(unittest.TestCase):
         actual_result = diff.lines()
         self.assertListEqual(actual_result, expected_result)
 
-    def test_filter1(self):
-        a = CfgBlock(["a", "  1", "no b", "ab"])
+    def test_filter0(self):
+        a = CfgBlock(["a", "b", "  c"])
 
         res = a.filter("")
-        expected_result = ["a", "  1", "no b", "ab"]
+        expected_result = ["a", "b", "  c"]
         actual_result = res.lines()
         self.assertListEqual(actual_result, expected_result)
 
-        res = a.filter([])
-        expected_result = ["a", "  1", "no b", "ab"]
+    def test_filter1(self):
+        a = CfgBlock(["a"])
+
+        res = a.filter("a")
+        expected_result = ["a"]
         actual_result = res.lines()
         self.assertListEqual(actual_result, expected_result)
 
-        res = a.filter(r"^a")
-        expected_result = ["a", "  1", "ab"]
-        actual_result = res.lines()
-        self.assertListEqual(actual_result, expected_result)
-
-        res = a.filter([r"b"])
-        actual_result = res.lines()
-        expected_result = ["no b", "ab"]
-        self.assertListEqual(actual_result, expected_result)
-
-        res = a.filter([r"A"], ignore_case=False)
-        actual_result = res.lines()
+        res = a.filter("b")
         expected_result = []
+        actual_result = res.lines()
         self.assertListEqual(actual_result, expected_result)
 
     def test_filter2(self):
-        a = CfgBlock(["a", "  1", "b", "  no 2", "ba", "  3"])
+        a = CfgBlock(["a", "b"])
 
-        res = a.filter([r"^a", r"^\d"])
-        expected_result = ["a", "  1"]
+        res = a.filter("a")
+        expected_result = ["a"]
         actual_result = res.lines()
         self.assertListEqual(actual_result, expected_result)
 
-        res = a.filter([r"a", r"^\d"])
-        expected_result = ["a", "  1", "ba", "  3"]
-        actual_result = res.lines()
-        self.assertListEqual(actual_result, expected_result)
-
-        res = a.filter([r"", r"^\d"])
-        expected_result = ["a", "  1", "b", "  no 2", "ba", "  3"]
-        actual_result = res.lines()
-        self.assertListEqual(actual_result, expected_result)
-
-        res = a.filter([r"", r""])
-        expected_result = ["a", "  1", "b", "  no 2", "ba", "  3"]
-        actual_result = res.lines()
-        self.assertListEqual(actual_result, expected_result)
-
-        res = a.filter([r"", r"[^\d]"])
-        expected_result = []
+        res = a.filter("b")
+        expected_result = ["b"]
         actual_result = res.lines()
         self.assertListEqual(actual_result, expected_result)
 
     def test_filter3(self):
-        a = CfgBlock(["a", "  b", "    no 1", "    a", "b", "  b", "    1", "    a"])
+        a = CfgBlock(["a", "  b"])
 
-        res = a.filter([r"^a", r"^b", r"^\d"])
-        expected_result = ["a", "  b", "    no 1"]
+        res = a.filter("a")
+        expected_result = ["a", "  b"]
         actual_result = res.lines()
         self.assertListEqual(actual_result, expected_result)
 
-        res = a.filter([r"", r"^b", r"^\d"])
-        expected_result = ["a", "  b", "    no 1", "b", "  b", "    1"]
+        res = a.filter("b")
+        expected_result = ["a", "  b"]
         actual_result = res.lines()
         self.assertListEqual(actual_result, expected_result)
 
-        res = a.filter([r"", r"", r"^zzz"])
-        expected_result = []
+
+    def test_filter4(self):
+        a = CfgBlock(["a", "  b", "  c"])
+
+        res = a.filter("a")
+        expected_result = ["a", "  b", "  c"]
+        actual_result = res.lines()
+        self.assertListEqual(actual_result, expected_result)
+
+        res = a.filter("b")
+        expected_result = ["a", "  b"]
+        actual_result = res.lines()
+        self.assertListEqual(actual_result, expected_result)
+
+    def test_filter5(self):
+        a = CfgBlock(["a", "  a", "    b", "    c", "    d"])
+
+        res = a.filter("a")
+        expected_result = ["a", "  a", "    b", "    c", "    d"]
+        actual_result = res.lines()
+        self.assertListEqual(actual_result, expected_result)
+
+        res = a.filter("b")
+        expected_result = ["a", "  a", "    b"]
+        actual_result = res.lines()
+        self.assertListEqual(actual_result, expected_result)
+
+        res = a.filter("c")
+        expected_result = ["a", "  a", "    c"]
+        actual_result = res.lines()
+        self.assertListEqual(actual_result, expected_result)
+
+        res = a.filter("d")
+        expected_result = ["a", "  a", "    d"]
         actual_result = res.lines()
         self.assertListEqual(actual_result, expected_result)
 

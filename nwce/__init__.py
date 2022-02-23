@@ -201,44 +201,29 @@ class CfgBlock(object):
                 res.children.append(c)
         return res
 
-    def filter(self, filters=None, ignore_case=True):
-        """Returns a new CfgBlock from the current CfgBlock filtered according to the regex structure."""
+    def filter(self, regex):
+        """Returns a new CfgBlock from the current CfgBlock filtered according to the regex."""
 
-        # allow duck-typing
-        if not filters:
-            return self
-        if type(filters) is str:
-            filters = [filters]
-        # check all filters are strings
-        if not all([type(s) is str for s in filters]):
-            raise Exception("Invalid list of filters, all must be strings!")
+        if self.line and re.search(regex, self.line):
+            return self.copy()
 
-        # filter creates new objects, current object will remain intact,
-        res = self.copy()
+        # self.line doesn't match or can't match
+        # if no children then return an empty CfgBlock
+        if not self.children:
+            return CfgBlock()
 
-        # compile current level regex
-        exp = filters[0]
-        if ignore_case:
-            cexp = re.compile(exp, re.IGNORECASE)
+        # if self has children, filter them recursively...
+        children = [c.filter(regex) for c in self.children]
+        # but remove those empty CfgBlocks
+        children = [c for c in children if c.children or c.line]
+
+        # then return the results
+        if children:
+            res = self.copy()
+            res.children = children
+            return res
         else:
-            cexp = re.compile(exp)
-
-        # now filtering starts
-        next_levels_filters = filters[1:]
-        filtered_children = list()
-        for b in res.children:
-            if cexp.search(b.line):
-                if next_levels_filters:  # if sub-filters are defined, they must match something
-                    c = b.filter(next_levels_filters, ignore_case=ignore_case)
-                    if not c.children:
-                        c = None
-                else:
-                    c = b
-                if c:
-                    filtered_children.append(c)
-        res.children = filtered_children
-
-        return res
+            return CfgBlock()
 
     def lines(self, comment_line=None, _recursion_count=0):
         """Returns a list of strings from the current CfgBlock."""
