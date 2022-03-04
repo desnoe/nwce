@@ -317,3 +317,17 @@ class CfgBlock(object):
 
         self.children = result
         return self
+
+    def negative_first(self):
+        """Returns the current CfgBlock object with negative lines first."""
+        result = list()
+
+        while self.children:
+            b = self.children.pop(0)
+            if b.negate:
+                result.insert(0, b.negative_first())
+            else:
+                result.append(b.negative_first())
+
+        self.children = result
+        return self

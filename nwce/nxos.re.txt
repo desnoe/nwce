@@ -69,6 +69,7 @@
 ^spanning-tree mode
 ^multicast
 ^\w{2,4} access-list
+  ^ignore
 ^diagnostic bootup
 ^diagnostic monitor
 ^qos statistics
@@ -139,6 +140,7 @@
 ^ip pim auto-enable
 ^ip pim bidir-rp-limit
 ^ip pim rp-address
+^ip pim log
 ^ip pim prune-on-expiry
 ^ip pim ssm
 ^ip pim spt-threshold
@@ -158,6 +160,8 @@
 ^ipv6 mld syslog-threshold
 ^ipv6 mld snooping
 ^ip arp
+^ip service-reflect mode
+^ip service-reflect destination
 ^ip service-reflect
 ^system default interface-vlan
 ^vlan

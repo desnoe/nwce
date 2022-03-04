@@ -566,6 +566,20 @@ class TestCfgBlock(unittest.TestCase):
         actual_result = res.lines()
         self.assertListEqual(actual_result, expected_result)
 
+    def test_negative_first1(self):
+        cfg = CfgBlock(["a", "no b", "c", "no d"])
+
+        expected_result = ["no d", "no b", "a", "c"]
+        actual_result = cfg.negative_first().lines()
+        self.assertListEqual(actual_result, expected_result)
+
+    def test_negative_first2(self):
+        cfg = CfgBlock(["a", "  no b", "  c", "  no d"])
+
+        expected_result = ["a", "  no d", "  no b", "  c"]
+        actual_result = cfg.negative_first().lines()
+        self.assertListEqual(actual_result, expected_result)
+
 
 if __name__ == "__main__":
     unittest.main()
