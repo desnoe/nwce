@@ -287,6 +287,27 @@ class TestCfgBlock(unittest.TestCase):
         actual_result = c._merge_duplicate_siblings().lines()
         self.assertListEqual(actual_result, expected_result)
 
+    def test_merge_duplicate_siblings6(self):
+        lines = ["a", "  b", "no a"]
+        c = CfgBlock(lines)
+        expected_result = ["no a"]
+        actual_result = c._merge_duplicate_siblings().lines()
+        self.assertListEqual(actual_result, expected_result)
+
+    def test_merge_duplicate_siblings7(self):
+        lines = ["no a", "a", "  c"]
+        c = CfgBlock(lines)
+        expected_result = ["a", "  c"]
+        actual_result = c._merge_duplicate_siblings().lines()
+        self.assertListEqual(actual_result, expected_result)
+
+    def test_merge_duplicate_siblings7(self):
+        lines = ["no a", "a", "  b", "no a"]
+        c = CfgBlock(lines)
+        expected_result = ["no a"]
+        actual_result = c._merge_duplicate_siblings().lines()
+        self.assertListEqual(actual_result, expected_result)
+
     def test_lines(self):
         lines = ["1", "2", "no 3"]
         c = CfgBlock(lines)
@@ -434,6 +455,38 @@ class TestCfgBlock(unittest.TestCase):
         actual_result = merge.lines()
         self.assertListEqual(actual_result, expected_result)
 
+    def test_merge9(self):
+        a = CfgBlock(["a"])
+        b = CfgBlock(["no a"])
+        merge = a + b
+        expected_result = ["no a"]
+        actual_result = merge.lines()
+        self.assertListEqual(actual_result, expected_result)
+
+    def test_merge10(self):
+        a = CfgBlock(["no a"])
+        b = CfgBlock(["a"])
+        merge = a + b
+        expected_result = ["a"]
+        actual_result = merge.lines()
+        self.assertListEqual(actual_result, expected_result)
+
+    def test_merge11(self):
+        a = CfgBlock(["a", "  b"])
+        b = CfgBlock(["no a", "  c"])
+        merge = a + b
+        expected_result = ["no a", "  c"]
+        actual_result = merge.lines()
+        self.assertListEqual(actual_result, expected_result)
+
+    def test_merge12(self):
+        a = CfgBlock(["no a", "  b"])
+        b = CfgBlock(["a", "  c"])
+        merge = a + b
+        expected_result = ["a", "  c"]
+        actual_result = merge.lines()
+        self.assertListEqual(actual_result, expected_result)
+
     def test_diff1(self):
         a = CfgBlock(["a"])
         b = CfgBlock(["no b"])
@@ -478,7 +531,17 @@ class TestCfgBlock(unittest.TestCase):
         a = CfgBlock(["a", "  c", "  d", "no b"])
         b = CfgBlock(["a", "b", "  c", "  d"])
         diff = b - a
-        expected_result = ["b", "a", "  no d", "  no c", "b", "  c", "  d"]
+        expected_result = ["b", "  c", "  d", "a", "  no d", "  no c"]
+        actual_result = diff.lines()
+        self.assertListEqual(actual_result, expected_result)
+
+    def test_diff7(self):
+        a = CfgBlock(["a 20", "  b", "  c"])
+
+        b = CfgBlock(["no a 20", "a 10", "  c"])
+
+        diff = b - a
+        expected_result = ["no a 20", "a 10", "  c"]
         actual_result = diff.lines()
         self.assertListEqual(actual_result, expected_result)
 
@@ -528,7 +591,6 @@ class TestCfgBlock(unittest.TestCase):
         expected_result = ["a", "  b"]
         actual_result = res.lines()
         self.assertListEqual(actual_result, expected_result)
-
 
     def test_filter4(self):
         a = CfgBlock(["a", "  b", "  c"])

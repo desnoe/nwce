@@ -96,18 +96,10 @@ class CfgBlock(object):
 
     def _merge_duplicate_siblings(self):
         """Returns the CfgBlock object with merged duplicate siblings."""
-        res = []
-        while self.children:
-            c = self.children.pop(0)
-            dup: CfgBlock = next((b for b in res if b.line == c.line), None)
-            if dup:
-                if dup.negate != c.negate:
-                    raise Exception(f"Can't merge {dup} and {c}")
-                dup.children.extend(c.children)
-                dup._merge_duplicate_siblings()
-            else:
-                res.append(c)
-        self.children = res
+        res = CfgBlock()
+        for c in self.children:
+            res += c
+        self.children = res.children
         return self
 
     def _parse(self, lines):
@@ -167,11 +159,12 @@ class CfgBlock(object):
             matching_blocks = [b for b in self.children if b.line == c.line]
             if len(matching_blocks) > 0:
                 if matching_blocks[0].negate != c.negate:
-                    raise Exception(f"Can't merge {matching_blocks[0]} and {c}")
-                matching_blocks[0].merge(c)
+                    matching_blocks[0].negate = c.negate
+                    matching_blocks[0].children = c.children
+                else:
+                    matching_blocks[0].merge(c)
             else:
                 d = c.copy()
-                d.parent = self
                 self.children.append(d)
         return self
 
@@ -184,22 +177,22 @@ class CfgBlock(object):
                 c = CfgBlock([])
                 c.line = b2.line
                 c.negate = not b2.negate
-                c.parent = res
                 res.children.insert(0, c)
         for b1 in op1.children:
             matching_blocks = [b2 for b2 in op2.children if b2.line == b1.line]
             if len(matching_blocks) > 0:
-                c = CfgBlock.diff(b1, matching_blocks[0])
-                if c.children:
-                    c.line = b1.line
-                    c.negate = b1.negate
-                    c.parent = res
-                    res.children.append(c)
+                if matching_blocks[0].negate != b1.negate:
+                    res.children.append(b1)
+                else:
+                    c = CfgBlock.diff(b1, matching_blocks[0])
+                    if c.children:
+                        c.line = b1.line
+                        c.negate = b1.negate
+                        res.children.append(c)
             else:
                 c = b1.copy()
-                c.parent = res
                 res.children.append(c)
-        return res
+        return res._merge_duplicate_siblings()
 
     def filter(self, regex):
         """Returns a new CfgBlock from the current CfgBlock filtered according to the regex."""
