@@ -368,6 +368,14 @@ class TestCfgBlock(unittest.TestCase):
         actual_result = c.sort(rules=CfgBlock(rules)).lines()
         self.assertListEqual(actual_result, expected_result)
 
+    def test_sort5(self):
+        lines = ["b", "a 3 22 1 c"]
+        rules = [r"a (?P<params>(?:\d+ ?)+) c", "b"]
+        c = CfgBlock(lines)
+        expected_result = ["a 1 3 22 c", "b"]
+        actual_result = c.sort(rules=CfgBlock(rules)).lines()
+        self.assertListEqual(actual_result, expected_result)
+
     def test_comment(self):
         lines = ["a 1", "a 2", "b", "  no c"]
         c = CfgBlock(lines)

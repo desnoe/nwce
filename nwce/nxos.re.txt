@@ -68,7 +68,9 @@
 ^crypto
 ^spanning-tree mode
 ^multicast
+^interface breakout
 ^\w{2,4} access-list
+  ^statistics
   ^ignore
 ^diagnostic bootup
 ^diagnostic monitor
@@ -251,6 +253,7 @@
     ^pim
         ^default
 ^nbm reserve
+^nbm flow asm range (?P<params>(?:[\d\.\/]+ ?)+)
 ^nbm flow
 ^nbm flow-policy
 ^nbm

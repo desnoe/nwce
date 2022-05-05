@@ -142,6 +142,17 @@ class CfgBlock(object):
             i = j
         return res
 
+    @staticmethod
+    def _params_sort(line, regex_match):
+        if 'params' in regex_match.groupdict():
+            params = re.split(r'\s+', regex_match.group('params'))
+            params.sort(key=lambda b: naturalize(b, 1000))
+            res = line.line[:regex_match.start('params')]
+            res += ' '.join(params)
+            res += line.line[regex_match.end('params'):]
+            line.line = res
+        return line
+
     def copy(self, align=False):
         """Returns a deep-copy of a CfgBlock object."""
         res = CfgBlock()
@@ -297,7 +308,7 @@ class CfgBlock(object):
         for rule in rules.children:
             p = re.compile(rule.line, flags=re.IGNORECASE)
             # all matched blocks, sorted alphabetically after naturalization
-            matched = [b for b in lines if p.search(b.line)]
+            matched = [self._params_sort(*c) for c in [(b, p.search(b.line)) for b in lines] if c[1]]
             matched = sorted(matched, key=lambda b: naturalize(b.line, 1000))
             # remove matched blocks from lines
             lines = [b for b in lines if not p.search(b.line)]
