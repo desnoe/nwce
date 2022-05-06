@@ -143,13 +143,24 @@ class CfgBlock(object):
         return res
 
     @staticmethod
+    def _blocks_sort(block, regex_match):
+        c1, c2, c3, clast = "", "", "", naturalize(block.line, 1000)
+        if "id1" in regex_match.groupdict():
+            c1 = naturalize(regex_match.group("id1"), 1000)
+        if "id2" in regex_match.groupdict():
+            c2 = naturalize(regex_match.group("id2"), 1000)
+        if "id3" in regex_match.groupdict():
+            c3 = naturalize(regex_match.group("id3"), 1000)
+        return c1, c2, c3, clast
+
+    @staticmethod
     def _params_sort(line, regex_match):
-        if 'params' in regex_match.groupdict():
-            params = re.split(r'\s+', regex_match.group('params'))
+        if "params" in regex_match.groupdict():
+            params = re.split(r"\s+", regex_match.group("params"))
             params.sort(key=lambda b: naturalize(b, 1000))
-            res = line.line[:regex_match.start('params')]
-            res += ' '.join(params)
-            res += line.line[regex_match.end('params'):]
+            res = line.line[: regex_match.start("params")]
+            res += " ".join(params)
+            res += line.line[regex_match.end("params") :]
             line.line = res
         return line
 
@@ -306,14 +317,23 @@ class CfgBlock(object):
         result = list()
         lines = self.children.copy()
         for rule in rules.children:
+            # calculate matches
             p = re.compile(rule.line, flags=re.IGNORECASE)
-            # all matched blocks, sorted alphabetically after naturalization
-            matched = [self._params_sort(*c) for c in [(b, p.search(b.line)) for b in lines] if c[1]]
-            matched = sorted(matched, key=lambda b: naturalize(b.line, 1000))
+            search_results = [{"block": b, "search_result": p.search(b.line)} for b in lines]
+
             # remove matched blocks from lines
-            lines = [b for b in lines if not p.search(b.line)]
+            matched = [s for s in search_results if s["search_result"]]
+            lines = [s["block"] for s in search_results if not s["search_result"]]
+
+            # sort params, if any
+            for s in matched:
+                s["block"] = self._params_sort(s["block"], s["search_result"])
+
+            # sort all matched blocks
+            matched.sort(key=lambda s: self._blocks_sort(s["block"], s["search_result"]))
+
             # now sort matched blocks children using matching rule children
-            result += [block.sort(rules=rule) for block in matched]
+            result += [block["block"].sort(rules=rule) for block in matched]
 
         # default rule for all remaining lines
         lines.sort(key=lambda b: naturalize(b.line, 1000))

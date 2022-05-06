@@ -178,7 +178,7 @@
 ^system default route-map
 ^ip prefix-list
 ^ip community-list
-^route-map
+^route-map (?P<id1>[^\s]+) .* (?P<id2>\d+)$
 ^ip flow
 ^flow
 ^vrf context management
