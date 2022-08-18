@@ -49,7 +49,8 @@ class CfgBlock(object):
 
         if lines:
             self._parse(lines)
-            self._merge_duplicate_siblings()
+            # removed because of bad performance
+            # self._merge_duplicate_siblings()
 
     def __repr__(self):
         r = str(self)
@@ -300,7 +301,7 @@ class CfgBlock(object):
                     i += 1
             return res
 
-    def sort(self, rules=None):
+    def sort(self, rules=None, merge_duplicate_siblings=False):
         """Returns the current CfgBlock object sorted according to the rule list passed as argument."""
 
         # find rules if not provided as argument
@@ -340,6 +341,8 @@ class CfgBlock(object):
         result += [block.sort(rules=CfgBlock([])) for block in lines]
 
         self.children = result
+        if merge_duplicate_siblings:
+            self._merge_duplicate_siblings()
         return self
 
     def negative_first(self):
